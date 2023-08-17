@@ -1,0 +1,65 @@
+    stateDiagram-v2
+        direction LR
+
+        classDef red fill:red,stroke:black,stroke-width:2px,color:#fff
+        classDef black fill:black,stroke:white,stroke-width:2px,color:#fff
+
+
+        state "identify\n  protocol" as ip1
+        state if_prot <<choice>>
+        state "Report Error" as error_state
+
+        state "ark" as ark {
+            direction LR
+            
+            state if_dark <<choice>>
+            ark_a: retrive url fom \n pid metadata
+            ark_b: create a query \nto ark global resolver
+            ark_c: url_value
+            
+
+            [*] --> if_dark : is a dARK pid?
+            if_dark --> ark_a: yes
+            if_dark --> ark_b: no
+            ark_a --> ark_c : url_value = dARK.url
+            ark_b --> ark_c : url_value = n2t.net/pid
+            ark_c --> [*]
+            
+
+        }
+
+        state "doi" as doi {
+            s2direction LR
+            
+            state if_doi <<choice>>
+            doi_a: use the doi to\n retrive dARK pid
+            doi_b: create a query \nto doi resolver
+            doi_c: url_value
+            
+
+            [*] --> if_doi : doi belong to dARK pid?
+            if_doi --> doi_a: yes
+            if_doi --> doi_b: no
+            doi_a --> doi_c : url_value = dARK.url
+            doi_b --> doi_c : url_value = doi.dx/pid
+            doi_c --> [*]
+        }
+
+        state "redirect the user\n to the url" as forward_user
+
+        [*] --> ip1 : user query
+        ip1 --> if_prot
+        if_prot --> ark : ark
+        if_prot --> doi : doi
+        if_prot --> error_state : other protocols
+        
+        error_state --> [*]
+
+        ark --> forward_user : forward the url to the user
+        doi --> forward_user : forward the url to the user
+        forward_user --> [*]
+        
+
+
+        class error_state as black
+        class forward_user as black

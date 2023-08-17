@@ -1,0 +1,8 @@
+{
+    "theme": "neutral",
+    "generate": {
+        "type": "png",
+        "scale": 8.0,
+        "outputPath": "./docs/figures/"
+    }
+}
