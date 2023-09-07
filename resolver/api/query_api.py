@@ -11,7 +11,7 @@ from dark import DarkMap, DarkGateway
 ##
 PROJECT_ROOT='./'
 SUPORTED_PROTOCOLS = ['ark:','doi:']
-
+MANAGED_NAM_DICT = json.loads(os.environ['MANAGED_NAM_DICT'])
 
 ##
 ## API CONFIGURATIONS
@@ -97,7 +97,8 @@ def retrieve_ark(protocol,pid):
         resp, resp_code = get_pid(pid_id)
         globla_resolver_addr = 'https://dx.doi.org/'
 
-    if resp_code == 500:
+    nam = pid_id.split('/')[0]
+    if (resp_code == 500) and (MANAGED_NAM_DICT.get(nam) == None):
         #send to global resolver
         # https://n2t.net/ark:/99166/w66d60p2
         # http://127.0.0.1:8000/ark:/99166/w66d60p2

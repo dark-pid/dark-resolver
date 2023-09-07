@@ -34,14 +34,14 @@ if __name__ == "__main__":
     except KeyError:
         resolv_port=8000
     try:
-        os.environ['MANAGED_NAM_LIST']
+        os.environ['MANAGED_NAM_DICT']
     except KeyError:
         print("ERROR: MANAGED_NAM_DICT not set")
         print("resolver shutdown")
         sys.exit()
 
     try:
-        env_list = json.loads(os.environ['MANAGED_NAM_LIST'])
+        env_list = json.loads(os.environ['MANAGED_NAM_DICT'])
         if type(env_list) != dict:
             raise KeyError("Not a dict")
     except:
