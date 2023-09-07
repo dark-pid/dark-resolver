@@ -13,18 +13,34 @@
             direction LR
             
             state if_dark <<choice>>
+
+
             ark_a: retrive url fom \n pid metadata
             ark_b: create a query \nto ark global resolver
-            ark_c: url_value
+            ark_c: set redirect url
+            dark_exist: PID exist?
+
+            error_dark_state: report pid\n not found
             
 
             [*] --> if_dark : is a dARK pid?
-            if_dark --> ark_a: yes
-            if_dark --> ark_b: no
-            ark_a --> ark_c : url_value = dARK.url
-            ark_b --> ark_c : url_value = n2t.net/pid
-            ark_c --> [*]
+            if_dark --> dark_exist : yes
             
+            dark_exist --> error_dark_state: no 
+            dark_exist --> ark_a: yes
+            
+
+            if_dark --> ark_b: no
+            
+            
+            ark_a --> ark_c : url_value = dARK.url
+
+            ark_b --> ark_c : url_value = n2t.net/pid
+
+
+            ark_c --> [*]
+
+            error_dark_state --> [*]
 
         }
 
@@ -63,3 +79,4 @@
 
         class error_state as black
         class forward_user as black
+        class error_dark_state as black

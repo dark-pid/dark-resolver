@@ -44,6 +44,7 @@ Regardless of the pid system (e.g., ark or doi)[:^1], the dARK Resolver follows 
 3. If not, create a query to the corresponding protocol's global resolver and obtain the URL.
 4. Redirect the user to the resolved URL.
 
+Notice that if the query is performed considering the ark, we also check if the NAM of the PID is managed (if PID organization is responsible for the resolver). If the PID is the responsibility of the resolver, the user will receive a message informing that PID is not found.
 
 
 ## Get Started
