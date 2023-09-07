@@ -21,3 +21,5 @@ gunicorn
 
 # dark
 dark-gateway==0.1.0
+# load variables
+python-dotenv

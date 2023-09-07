@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 
 from flask import Flask , jsonify , render_template, send_file, abort
 
@@ -27,9 +28,26 @@ def index():
     return render_template('home.html')
 
 if __name__ == "__main__":
+
     try:
         resolv_port=os.environ['RESOLVER_PORT']
     except KeyError:
         resolv_port=8000
+    try:
+        os.environ['MANAGED_NAM_LIST']
+    except KeyError:
+        print("ERROR: MANAGED_NAM_DICT not set")
+        print("resolver shutdown")
+        sys.exit()
+
+    try:
+        env_list = json.loads(os.environ['MANAGED_NAM_LIST'])
+        if type(env_list) != dict:
+            raise KeyError("Not a dict")
+    except:
+        print("ERROR: MANAGED_NAM_DICT malformed")
+        print("resolver shutdown")
+        sys.exit()
+
 
     app.run(host='0.0.0.0', port=resolv_port)
