@@ -44,6 +44,9 @@ if __name__ == "__main__":
         env_list = json.loads(os.environ['MANAGED_NAM_DICT'])
         if type(env_list) != dict:
             raise KeyError("Not a dict")
+        else:
+            print('RESOLVING :')
+            print(str(env_list))
     except:
         print("ERROR: MANAGED_NAM_DICT malformed")
         print("resolver shutdown")
