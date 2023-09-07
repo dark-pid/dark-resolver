@@ -104,7 +104,7 @@ def retrieve_ark(protocol,pid):
         globla_resolver_addr = 'https://dx.doi.org/'
 
     nam = pid_id.split('/')[0]
-    if (resp_code == 500) and (MANAGED_NAM_DICT.get(nam) == None):
+    if (resp_code == 500 or resp_code == 404) and (MANAGED_NAM_DICT.get(nam) == None):
         #send to global resolver
         # https://n2t.net/ark:/99166/w66d60p2
         # http://127.0.0.1:8000/ark:/99166/w66d60p2
