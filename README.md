@@ -53,7 +53,20 @@ To start using the dARK Resolver, follow the steps outlined in our [Installation
 
 ### How to run the dARK resolver
 
-TODO:
+
+1. set system variables
+
+Windows
+```ps1
+$env:MANAGED_NAM_DICT='{"8033":true}'
+```
+
+Linux
+```sh
+export env.resolver
+```
+
+2. Start the service
 
 ```sh
     cd resolver

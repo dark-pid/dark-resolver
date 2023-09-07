@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import configparser
 
 from flask import Blueprint, jsonify , redirect
@@ -11,7 +12,12 @@ from dark import DarkMap, DarkGateway
 ##
 PROJECT_ROOT='./'
 SUPORTED_PROTOCOLS = ['ark:','doi:']
-MANAGED_NAM_DICT = json.loads(os.environ['MANAGED_NAM_DICT'])
+try:
+    MANAGED_NAM_DICT = json.loads(os.environ['MANAGED_NAM_DICT'])
+except:
+    print("ERROR: MANAGED_NAM_DICT not set or malformed")
+    print("resolver shutdown")
+    sys.exit()
 
 ##
 ## API CONFIGURATIONS
@@ -57,8 +63,9 @@ def get_pid(dark_id):
 
         resp = resp_dict
     except ValueError as e:
-        resp = jsonify({'status' : 'Unable to recovery (' + str(dark_id) + ')', 'block_chain_error' : str(e)},)
-        resp_code = 500
+        #nao existe na bc
+        resp = jsonify({'status' : 'Unable to recovery (' + str(dark_id) + ')', 'ablock_chain_error' : str(e)},)
+        resp_code = 404
     except Exception as e:
         resp = jsonify({'status' : 'Unable to recovery (' + str(dark_id) + ')', 'block_chain_error' : str(e)},)
         resp_code = 500 # colocar um erro especifico?
@@ -73,7 +80,6 @@ def get_by_doi(doi_id):
     except Exception as e:
         resp = jsonify({'status' : 'Unable to recovery (' + str(doi_id) + ')', 'block_chain_error' : str(e)},)
         resp_code = 500 # colocar um erro especifico?
-
 
 def call_external_resolver(globla_resolver_addr,pid_id):
     redirect_url =  globla_resolver_addr + pid_id
@@ -106,6 +112,8 @@ def retrieve_ark(protocol,pid):
         # https://dx.doi.org/10.1016/j.datak.2023.102180
         # http://127.0.0.1:8000/get/DOI:/10.1016/j.datak.2023.102180
         return call_external_resolver(globla_resolver_addr, pid_id)
+    elif (resp_code == 404) and (MANAGED_NAM_DICT.get(nam) != None):
+        return jsonify({'status' : 'Unable to recovery (' + protocol +'/'+ str(pid_id) + ')'}), 404
     else:
         return resp, resp_code
 
