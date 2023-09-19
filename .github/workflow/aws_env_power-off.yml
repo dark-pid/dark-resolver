@@ -1,0 +1,19 @@
+name: AWS Power Off
+
+on:
+  workflow_dispatch:
+  # pull_request:
+  #   branches:
+  #     - develop
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Stop AWS VMs
+        run: |
+          aws ec2 stop-instances --instance-ids ${{secrets.AWS_INSTANCE }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}

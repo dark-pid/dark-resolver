@@ -1,0 +1,31 @@
+name: AWS Deploy
+on:
+  workflow_dispatch:
+  # workflow_run:
+  #   workflows: ["aws_setup_host"]
+  #   types:
+  #     - completed
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: code checkout
+        uses: actions/checkout@v2
+      
+      - name: Docker Build Image
+        run: docker build . -t resolver-main -f docker/Dockerfile
+      - nam: Clean Up Docker
+        run: |
+          if [ ! "$(docker ps -a -q -f name=resolver-main" ]; then
+            docker stop resolver-main
+            docker rm resolver-main
+
+            if [ "$(docker ps -aq -f status=exited -f name=resolver-main)" ]; then
+                # cleanup
+                docker rm resolver-main
+            fi
+
+          fi
+      - name: Docker Run
+        run: |
+          docker run -dp 8000:8000 --network host --env MANAGED_NAM_DICT='{"8033":true}' --name resolver-main resolver-main
