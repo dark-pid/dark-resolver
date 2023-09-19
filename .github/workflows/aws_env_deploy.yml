@@ -14,7 +14,7 @@ jobs:
       
       - name: Docker Build Image
         run: docker build . -t resolver-main -f docker/Dockerfile
-      - nam: Clean Up Docker
+      - name: Clean Up Docker
         run: |
           if [ ! "$(docker ps -a -q -f name=resolver-main" ]; then
             docker stop resolver-main
