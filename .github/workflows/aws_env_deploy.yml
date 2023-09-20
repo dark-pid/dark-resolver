@@ -14,13 +14,14 @@ jobs:
       AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
       AWS_INSTANCE_ID: ${{ secrets.AWS_INSTANCE }}
     outputs:
-      output1: ${{ steps.power_on.outputs.STATUS }}
-      output2: ${{ steps.power_on.outputs.INSTANCE_DNS }}
+      VM_ORIGINAL_STATUS: ${{ steps.power_on.outputs.STATUS }}
+      VM_DNS: ${{ steps.power_on.outputs.INSTANCE_DNS }}
     steps:
       - id: power_on
         name: Start AWS VMs
         run: |
           INSTANCE_STATE=`aws ec2 describe-instances --instance-ids $AWS_INSTANCE_ID --output text --query 'Reservations[*].Instances[*].State.Name'`
+          echo "VM_ORIGINAL_STATUS=$INSTANCE_STATE"
           [ "$INSTANCE_STATE" = "stopped" ] &&  aws ec2 start-instances --instance-ids $AWS_INSTANCE_ID || echo "STATUS=POWER_ON" >> "$GITHUB_OUTPUT"
           [ "$INSTANCE_STATE" = "stopped" ] &&  aws ec2 wait instance-running --instance-ids $AWS_INSTANCE_ID || echo "VM ALREDY POWERED"
           INSTANCE_DNS=`aws ec2 describe-instances --instance-ids $AWS_INSTANCE_ID --query 'Reservations[*].Instances[*].PublicDnsName' --output text`
@@ -30,9 +31,11 @@ jobs:
     needs: power_on
     env:
       # OUTPUT1: ${{needs.power_on.outputs.STATUS}}
-      VM_DNS: ${{needs.power_on.outputs.VM_DNS}}
+      INSTANCE_DNS: ${{needs.power_on.outputs.VM_DNS}}
       CONTAINER_NAME: resolve-rmain
       SERVICE_PORT: 8000
+    outputs:
+        SERVICE_ADDR : ${{ steps.report.outputs.SERVICE_ADDR }}
     steps:
       - name: code checkout
         uses: actions/checkout@v2
@@ -49,4 +52,7 @@ jobs:
         name: Docker Run
         run: |
           docker run -dp "$SERVICE_PORT":"$SERVICE_PORT" --network host --env MANAGED_NAM_DICT='{"8033":true}' --name "$CONTAINER_NAME" "$CONTAINER_NAME"
-          echo "http://${EC2_HOST}:$SERVICE_PORT" >> "$GITHUB_OUTPUT"
+      - id: report
+        name: Report
+        run: |
+          echo "SERVICE_ADDR=http://${INSTANCE_DNS}:$SERVICE_PORT" >> "$GITHUB_OUTPUT"
