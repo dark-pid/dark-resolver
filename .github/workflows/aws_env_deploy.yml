@@ -51,6 +51,8 @@ jobs:
       - id: run
         name: Docker Run
         run: |
+          [ "$(docker ps -aq -f status=exited -f name=$CONTAINER_NAME)"] && { docker rm "$CONTAINER_NAME"; } || echo "No container to clenup"
+          sleep 2
           docker run -dp "$SERVICE_PORT":"$SERVICE_PORT" --network host --env MANAGED_NAM_DICT='{"8033":true}' --name "$CONTAINER_NAME" "$CONTAINER_NAME"
       - id: report
         name: Report
