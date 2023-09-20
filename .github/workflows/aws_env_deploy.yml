@@ -26,7 +26,7 @@ jobs:
           [ "$INSTANCE_STATE" = "stopped" ] &&  aws ec2 start-instances --instance-ids $AWS_INSTANCE_ID || echo "STATUS=POWER_ON" >> "$GITHUB_OUTPUT"
           [ "$INSTANCE_STATE" = "stopped" ] &&  aws ec2 wait instance-running --instance-ids $AWS_INSTANCE_ID || echo "VM ALREDY POWERED"
           INSTANCE_DNS=`aws ec2 describe-instances --instance-ids $AWS_INSTANCE_ID --query 'Reservations[*].Instances[*].PublicDnsName' --output text`
-          echo "VM_DNS=$INSTANCE_DNS" >> "$GITHUB_OUTPUT
+          echo "VM_DNS=$INSTANCE_DNS" >> "$GITHUB_OUTPUT"
   deploy:
     runs-on: self-hosted
     needs: power_on
