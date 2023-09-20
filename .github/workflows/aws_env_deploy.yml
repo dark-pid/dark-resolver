@@ -47,12 +47,13 @@ jobs:
         name: Clean Up Docker
         run: |
           CONTAINER_ID=`docker ps -a -q -f name="$CONTAINER_NAME"`
-          [ ! "$CONTAINER_ID" ] && { docker stop "$CONTAINER_NAME"; sleep 2 ; docker rm "$CONTAINER_NAME"; sleep 2; } || echo "No container to clenup"
+          [ ! $CONTAINER_ID ] && { docker stop "$CONTAINER_NAME"; sleep 2 ; docker rm "$CONTAINER_NAME"; sleep 2; } || echo "No container to clenup"
       - id: run
         name: Docker Run
         run: |
           sleep 2
-          [ "$(docker ps -aq -f status=exited -f name=$CONTAINER_NAME)"] && { docker rm "$CONTAINER_NAME"; } || echo "No container to clenup"
+          STATUS_CLEAN=`docker ps -aq -f status=exited -f name=$CONTAINER_NAME`
+          [ $STATUS_CLEAN ] && { docker rm "$CONTAINER_NAME"; } || echo "No container to clenup"
           sleep 1
           docker run -dp "$SERVICE_PORT":"$SERVICE_PORT" --network host --env MANAGED_NAM_DICT='{"8033":true}' --name "$CONTAINER_NAME" "$CONTAINER_NAME"
       - id: report
