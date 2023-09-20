@@ -6,26 +6,47 @@ on:
   #   types:
   #     - completed
 jobs:
-  build:
+  power_on:
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      AWS_INSTANCE_ID: ${{ secrets.AWS_INSTANCE }}
+      CONTAINER_NAME: resolver-main
+      SERVICE_PORT: 8000
+    outputs:
+      output1: ${{ steps.power_on.outputs.STATUS }}
+      output2: ${{ steps.power_on.outputs.INSTANCE_DNS }}
+    steps:
+      - id: power_on
+        name: Start AWS VMs
+        run: |
+          INSTANCE_STATE=`aws ec2 describe-instances --instance-ids $AWS_INSTANCE_ID --output text --query 'Reservations[*].Instances[*].State.Name'`
+          [ "$INSTANCE_STATE" = "stopped" ] &&  aws ec2 start-instances --instance-ids $AWS_INSTANCE_ID || echo "STATUS=POWER_ON" >> "$GITHUB_OUTPUT"
+          [ "$INSTANCE_STATE" = "stopped" ] &&  aws ec2 wait instance-running --instance-ids $AWS_INSTANCE_ID || echo "VM ALREDY POWERED"
+          INSTANCE_DNS=`aws ec2 describe-instances --instance-ids $AWS_INSTANCE_ID --query 'Reservations[*].Instances[*].PublicDnsName' --output text`
+          echo "VM_DNS=$INSTANCE_DNS" >> "$GITHUB_OUTPUT
+  deploy:
     runs-on: self-hosted
+    needs: power_on
+    env:
+      # OUTPUT1: ${{needs.power_on.outputs.STATUS}}
+      VM_DNS: ${{needs.power_on.outputs.VM_DNS}}
+      SERVICE_PORT: 8000
     steps:
       - name: code checkout
         uses: actions/checkout@v2
-      
-      - name: Docker Build Image
-        run: docker build . -t resolver-main -f docker/Dockerfile
-      - name: Clean Up Docker
+      - id: checkout
+        name: Docker Build Image
+        run: docker build . -t $CONTAINER_NAME -f docker/Dockerfile
+      - id: clean
+        name: Clean Up Docker
         run: |
-          if [ ! "$(docker ps -a -q -f name=resolver-main" ]; then
-            docker stop resolver-main
-            docker rm resolver-main
-
-            if [ "$(docker ps -aq -f status=exited -f name=resolver-main)" ]; then
-                # cleanup
-                docker rm resolver-main
-            fi
-
-          fi
-      - name: Docker Run
+          CONTAINER_ID = docker ps -a -q -f name=$CONTAINER_NAME
+          [ ! "$CONTAINER_ID" ] && { docker stop $CONTAINER_NAME; docker rm $CONTAINER_NAME; } || echo "Container Ja parado"
+      - id: run
+        name: Docker Run
         run: |
-          docker run -dp 8000:8000 --network host --env MANAGED_NAM_DICT='{"8033":true}' --name resolver-main resolver-main
+          docker run -dp $SERVICE_PORT:$SERVICE_PORT --network host --env MANAGED_NAM_DICT='{"8033":true}' --name $CONTAINER_NAME $CONTAINER_NAME
+          echo "http://${EC2_HOST}:$SERVICE_PORT" >> "$GITHUB_OUTPUT"
