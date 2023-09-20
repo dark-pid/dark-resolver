@@ -13,8 +13,6 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
       AWS_INSTANCE_ID: ${{ secrets.AWS_INSTANCE }}
-      CONTAINER_NAME: resolvermain
-      SERVICE_PORT: 8000
     outputs:
       output1: ${{ steps.power_on.outputs.STATUS }}
       output2: ${{ steps.power_on.outputs.INSTANCE_DNS }}
@@ -33,6 +31,7 @@ jobs:
     env:
       # OUTPUT1: ${{needs.power_on.outputs.STATUS}}
       VM_DNS: ${{needs.power_on.outputs.VM_DNS}}
+      CONTAINER_NAME: resolve-rmain
       SERVICE_PORT: 8000
     steps:
       - name: code checkout
