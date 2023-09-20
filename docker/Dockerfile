@@ -13,4 +13,6 @@ RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 # clean
 RUN rm /tmp/requirements.txt
 
+COPY resolver/ /usr/src/resolver
+
 CMD ["python", "./server.py"]
