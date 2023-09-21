@@ -57,6 +57,8 @@ def get_pid(dark_id):
             dark_pid = dark_map.get_pid_by_ark(dark_id)
         
         resp_dict = dark_pid.to_dict()
+        del resp_dict['pid_hash']
+        del resp_dict ['responsible']
 
         if len(dark_pid.externa_pid_list) == 0:
             del resp_dict['externa_pid_list']
