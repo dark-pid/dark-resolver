@@ -56,9 +56,6 @@ jobs:
           sleep 2
           STATUS_CLEAN=`docker ps -aq -f status=exited -f name=$CONTAINER_NAME`
           [ $STATUS_CLEAN ] && { docker rm "$CONTAINER_NAME"; } || echo "No container to clenup"
-          docker stop "$CONTAINER_NAME"
-          sleep 5
-          docker rm "$CONTAINER_NAME"
           sleep 1
           docker run -dp "$SERVICE_PORT":"$SERVICE_PORT" --network host --env MANAGED_NAM_DICT='{"8033":true}' --name "$CONTAINER_NAME" "$CONTAINER_NAME"
   report:
