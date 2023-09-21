@@ -65,6 +65,7 @@ def get_pid(dark_id):
 
         #BUG: FIX typo externa_url
         #TODO: CREATE A METHOD TO CHEK IF PID IS A DRAFT
+        
         if len(dark_pid.externa_url) == 0:
             resp_code = 404
             resp = jsonify({'status' : 'Unable to recovery (' + str(dark_id) + ')', 'reason' : 'pid is a draft'},)
