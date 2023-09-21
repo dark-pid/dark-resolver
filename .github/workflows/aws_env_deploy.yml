@@ -30,7 +30,11 @@ jobs:
     runs-on: self-hosted
     needs: power_on
     env:
-      # OUTPUT1: ${{needs.power_on.outputs.STATUS}}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      AWS_INSTANCE_ID: ${{ secrets.AWS_INSTANCE }}
+      #
       INSTANCE_DNS: ${{needs.power_on.outputs.VM_DNS}}
       CONTAINER_NAME: resolve-rmain
       SERVICE_PORT: 8000
@@ -59,4 +63,6 @@ jobs:
       - id: report
         name: Report
         run: |
-          echo "SERVICE_ADDR=http://${INSTANCE_DNS}:$SERVICE_PORT" >> "$GITHUB_OUTPUT"
+          SERV_DNS=`aws ec2 describe-instances --instance-ids $AWS_INSTANCE_ID --query 'Reservations[*].Instances[*].PublicDnsName' --output text`
+          echo "SERVICE_ADDR=http://${SERV_DNS}:$SERVICE_PORT" >> "$GITHUB_OUTPUT"
+          echo "$SERV_DNS/resolver/"
