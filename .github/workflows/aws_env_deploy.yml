@@ -36,8 +36,8 @@ jobs:
       AWS_INSTANCE_ID: ${{ secrets.AWS_INSTANCE }}
       #
       INSTANCE_DNS: ${{needs.power_on.outputs.VM_DNS}}
-      CONTAINER_NAME: hyperdrive-main
-      SERVICE_PORT: 8080
+      CONTAINER_NAME: resolver-main
+      SERVICE_PORT: 8000
     steps:
       - name: code checkout
         uses: actions/checkout@v2
@@ -70,8 +70,8 @@ jobs:
       AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
       AWS_INSTANCE_ID: ${{ secrets.AWS_INSTANCE }}
       #
-      CONTAINER_NAME: hyperdrive-main
-      SERVICE_PORT: 8080
+      CONTAINER_NAME: resolver-main
+      SERVICE_PORT: 8000
     outputs:
         SERVICE_ADDR : ${{ steps.report.outputs.SERVICE_ADDR }}
     steps:
