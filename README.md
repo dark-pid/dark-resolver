@@ -53,25 +53,36 @@ To start using the dARK Resolver, follow the steps outlined in our [Installation
 
 ### How to run the dARK resolver
 
+Follow steps aboves
 
-1. set system variables
+> **1. Install Libraries**
+> 
+> 
+> ```
+> pip install -r requirements.txt
+> 
+>```
+>
+>  **2. set system variables**
+> 
+>> Windows
+>> ```ps1
+>> $env:MANAGED_NAM_DICT='{"8033":true}'
+>> ```
+>> 
+>> Linux
+>> ```sh
+>> export env.resolver
+>> ```
+>
+> **3. Start the service**
+>
+>```sh
+>    cd resolver
+>    python server.py
+>```
 
-Windows
-```ps1
-$env:MANAGED_NAM_DICT='{"8033":true}'
-```
-
-Linux
-```sh
-export env.resolver
-```
-
-2. Start the service
-
-```sh
-    cd resolver
-    python server.py
-```
+It is important to mention that the steps 2 and 3 are required to be executed on every executation (e.g., resolver startup)
 
 ## Contribution
 
