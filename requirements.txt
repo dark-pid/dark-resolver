@@ -16,6 +16,7 @@ flask
 flask-sqlalchemy
 flask_jwt_extended
 gunicorn
+gevent
 # recolocar quando alterar o web3
 # uvicorn[standard]==0.21.1
 
