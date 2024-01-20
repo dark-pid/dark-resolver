@@ -95,8 +95,44 @@ def call_external_resolver(globla_resolver_addr,pid_id):
     redirect_url =  globla_resolver_addr + pid_id
     return redirect(redirect_url, code=303)
 
-@query_api.route('/get/<protocol>/<path:pid>', methods=['GET'])
-def retrieve_ark(protocol,pid):
+@query_api.route('/<protocol>/<path:pid>', methods=['GET'])
+def forward_ark_to_url(protocol,pid):
+    # dark_id = nam + str('/') + shoulder
+    protocol = protocol.lower()
+    pid_id = str(pid)
+
+    if not protocol in SUPORTED_PROTOCOLS:
+        # http://127.0.0.1:8000/get/ccn:/99166/w66d60p2
+        resp = jsonify({'status' : 'PID [{}] system not suported. dARK resolver is able to handle {}'.format(protocol,SUPORTED_PROTOCOLS)},)
+        return resp, 500
+    
+    if protocol == 'ark:':
+        resp, resp_code = get_pid(pid_id)
+        globla_resolver_addr = 'https://n2t.net/ark:/'
+    if protocol == 'doi:':
+        resp, resp_code = get_pid(pid_id)
+        globla_resolver_addr = 'https://dx.doi.org/'
+    
+
+    nam = pid_id.split('/')[0]
+    if (resp_code == 500 or resp_code == 404) and (MANAGED_NAM_DICT.get(nam) == None):
+        # send to global resolver
+        # https://n2t.net/ark:/99166/w66d60p2
+        # http://127.0.0.1:8000/ark:/99166/w66d60p2
+        # https://dx.doi.org/10.1016/j.datak.2023.102180
+        # http://127.0.0.1:8000/get/DOI:/10.1016/j.datak.2023.102180
+        return call_external_resolver(globla_resolver_addr, pid_id)
+    elif (resp_code == 404) and (MANAGED_NAM_DICT.get(nam) != None):
+        return jsonify({'status' : 'Unable to recovery (' + protocol +'/'+ str(pid_id) + ')'}), 404
+    else:
+        # forward the ark to the url
+        url = resp['externa_url'].lower()
+        return  call_external_resolver(url, '')
+        # return resp, resp_code
+
+
+@query_api.route('/info/<protocol>/<path:pid>', methods=['GET'])
+def retrieve_ark_metada(protocol,pid):
     # dark_id = nam + str('/') + shoulder
     protocol = protocol.lower()
     pid_id = str(pid)
@@ -116,15 +152,9 @@ def retrieve_ark(protocol,pid):
     nam = pid_id.split('/')[0]
     if (resp_code == 500 or resp_code == 404) and (MANAGED_NAM_DICT.get(nam) == None):
         #send to global resolver
-        # https://n2t.net/ark:/99166/w66d60p2
-        # http://127.0.0.1:8000/ark:/99166/w66d60p2
-        #
-        # https://dx.doi.org/10.1016/j.datak.2023.102180
-        # http://127.0.0.1:8000/get/DOI:/10.1016/j.datak.2023.102180
         return call_external_resolver(globla_resolver_addr, pid_id)
     elif (resp_code == 404) and (MANAGED_NAM_DICT.get(nam) != None):
         return jsonify({'status' : 'Unable to recovery (' + protocol +'/'+ str(pid_id) + ')'}), 404
     else:
+        # return the metadata   
         return resp, resp_code
-
-
