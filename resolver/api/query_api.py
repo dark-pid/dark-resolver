@@ -60,7 +60,7 @@ def get_pid(dark_id):
         
         resp_dict = dark_pid.to_dict()
         del resp_dict['pid_hash']
-        del resp_dict ['responsible']
+        # del resp_dict['responsible']
 
         if len(dark_pid.externa_pid_list) == 0:
             del resp_dict['externa_pid_list']
@@ -158,6 +158,11 @@ def retrieve_ark_metada(protocol,pid):
     
     if protocol == 'ark:':
         resp, resp_code = get_pid(pid_id)
+        # who
+        who = resp['responsible']
+        del resp['responsible']
+        resp['who'] = who
+
         globla_resolver_addr = 'https://n2t.net/ark:/'
     if protocol == 'doi:':
         resp, resp_code = get_pid(pid_id)
