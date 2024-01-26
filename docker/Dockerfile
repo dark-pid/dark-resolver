@@ -15,4 +15,9 @@ RUN rm /tmp/requirements.txt
 
 COPY resolver/ /usr/src/resolver
 
-CMD ["python", "./server.py"]
+# single thread
+# CMD ["python", "./server.py"]
+
+# Use Gunicorn instead of the default CMD
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "server:app"]
+
