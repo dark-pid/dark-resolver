@@ -1,9 +1,11 @@
 import json
 import os
 import sys
+import re
+
 import configparser
 
-from flask import Blueprint, jsonify , redirect
+from flask import Blueprint, jsonify , redirect , request
 
 from dark import DarkMap, DarkGateway
 
@@ -58,7 +60,7 @@ def get_pid(dark_id):
         
         resp_dict = dark_pid.to_dict()
         del resp_dict['pid_hash']
-        del resp_dict ['responsible']
+        # del resp_dict['responsible']
 
         if len(dark_pid.externa_pid_list) == 0:
             del resp_dict['externa_pid_list']
@@ -95,7 +97,7 @@ def call_external_resolver(globla_resolver_addr,pid_id):
     redirect_url =  globla_resolver_addr + pid_id
     return redirect(redirect_url, code=303)
 
-@query_api.route('/<protocol>/<path:pid>', methods=['GET'])
+
 def forward_ark_to_url(protocol,pid):
     # dark_id = nam + str('/') + shoulder
     protocol = protocol.lower()
@@ -129,6 +131,18 @@ def forward_ark_to_url(protocol,pid):
         url = resp['externa_url'].lower()
         return  call_external_resolver(url, '')
         # return resp, resp_code
+    
+@query_api.route('/<protocol>/<path:pid>', methods=['GET'])
+def handle_route_query_route(protocol, pid):
+    if request.full_path.endswith('?info'):
+        return retrieve_ark_metada(protocol,pid)
+    elif re.search(r'\?[a-zA-Z0-9]', request.full_path):
+        #get the comand 
+        cmd = request.full_path.split('?')[-1]
+        return  jsonify({'status' : 'error', 'detail' : 'operation [{}] not implemeted'.format(cmd)}),500
+    else:
+        return forward_ark_to_url(protocol,pid)
+
 
 
 @query_api.route('/info/<protocol>/<path:pid>', methods=['GET'])
@@ -144,6 +158,11 @@ def retrieve_ark_metada(protocol,pid):
     
     if protocol == 'ark:':
         resp, resp_code = get_pid(pid_id)
+        # who
+        who = resp['responsible']
+        del resp['responsible']
+        resp['who'] = who
+
         globla_resolver_addr = 'https://n2t.net/ark:/'
     if protocol == 'doi:':
         resp, resp_code = get_pid(pid_id)
