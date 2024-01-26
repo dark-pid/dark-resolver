@@ -63,15 +63,26 @@ $env:MANAGED_NAM_DICT='{"8033":true}'
 
 Linux
 ```sh
-export env.resolver
+export MANAGED_NAM_DICT='{"8033":true}'
 ```
 
 2. Start the service
+
+single thread
 
 ```sh
     cd resolver
     python server.py
 ```
+
+start with gunicorn
+
+```sh
+    cd resolver
+    gunicorn -w 4 -b 0.0.0.0:8000 server:app --daemon
+```
+
+
 
 ## Contribution
 
