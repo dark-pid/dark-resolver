@@ -1,0 +1,47 @@
+name: La Referencia AWS Deploy
+on:
+  workflow_dispatch:
+  # workflow_run:
+  #   workflows: ["aws_setup_host"]
+  #   types:
+  #     - completed
+jobs:
+  deploy:
+    runs-on: self-hosted
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+      AWS_INSTANCE_ID: ${{ secrets.AWS_INSTANCE }}
+      #
+      CONTAINER_NAME: resolver-main
+      SERVICE_PORT: 8000
+    steps:
+      - name: Checkout resolver repository
+        uses: actions/checkout@v2
+      - name: Checkout dark-config repository
+        uses: actions/checkout@v2
+        with:
+          repository: dark-pid/dark-config
+          path: ../dark-config
+      - name: Copy main dARK config and credencial config
+        run: |
+          cp ../dark-config/*.ini ./resolver/
+      - id: build
+        name: Docker Build Image
+        run: |
+          docker build -t "$CONTAINER_NAME" -f docker/Dockerfile .
+      - id: clean
+        name: Clean Up Docker
+        # preciso melhora aqui
+        run: |
+          CONTAINER_ID=`docker ps -a -q -f name="$CONTAINER_NAME"`
+          [ $CONTAINER_ID ] && { docker stop "$CONTAINER_NAME"; sleep 2 ; docker rm "$CONTAINER_NAME"; sleep 2; } || echo "No container to clenup"
+      - id: run
+        name: Docker Run
+        run: |
+          sleep 2
+          STATUS_CLEAN=`docker ps -aq -f status=exited -f name=$CONTAINER_NAME`
+          [ $STATUS_CLEAN ] && { docker rm "$CONTAINER_NAME"; } || echo "No container to clenup"
+          sleep 1
+          docker run -dp "$SERVICE_PORT":"$SERVICE_PORT" --network host --env MANAGED_NAM_DICT='{"8033":true}' --name "$CONTAINER_NAME" "$CONTAINER_NAME"
