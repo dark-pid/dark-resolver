@@ -8,24 +8,19 @@ import configparser
 from flask import Blueprint, jsonify , redirect , request
 
 from dark import DarkMap, DarkGateway
+from shared_utils import MANAGED_NAM_DICT
+
 
 ##
 ## VARIABLES
 ##
 PROJECT_ROOT='./'
-SUPORTED_PROTOCOLS = ['ark:','doi:']
-try:
-    MANAGED_NAM_DICT = json.loads(os.environ['MANAGED_NAM_DICT'])
-except:
-    print("ERROR: MANAGED_NAM_DICT not set or malformed")
-    print("resolver shutdown")
-    sys.exit()
 
 ##
 ## API CONFIGURATIONS
 ##
 
-manage_api = Blueprint('update_api', __name__) # Blueprint('core_api', __name__, url_prefix='/core')
+manage_api = Blueprint('update_api', __name__)#, url_prefix='/admin')
 
 ##
 ## configuring dARK GW
@@ -49,7 +44,8 @@ dark_map = DarkMap(dark_gw)
 
 def update_dnmas(dm:DarkMap):
     dnma_list = []
-    for i in range(dm.auth_db.caller.count_dnma()):
+    n = dm.auth_db.caller.count_dnma()
+    for i in range(0,n):
         addr = dm.auth_db.caller.get_dnma_by_index(i)
         v = dm.auth_db.caller.get_dnma(addr)
         
@@ -65,7 +61,7 @@ def update_dnmas(dm:DarkMap):
             }
         dnma_list.append(dnma)
 
-        return dnma_list
+    return dnma_list
 
 
 @manage_api.route('/update/dnmas', methods=['GET'])
@@ -73,10 +69,21 @@ def update_managed_nam_dict():
     # data = request.get_json()  # Dados recebidos via POST
     # app.config['MANAGED_NAM_DICT'].update(data)
     lista = update_dnmas(dark_map)
-    if len(lista) > 0:
-        dict_dnma = {}
-        for dnma in lista:
-            dict_dnma[dnma['nan']] = True
-
-    MANAGED_NAM_DICT.update(dict_dnma)
-    return jsonify({"message": "Variável atualizada com sucesso!"})
+    if len(lista) == 0:
+        resp_code = 500
+        resp = jsonify({'status' : 'no pids availabel'},)
+    else:
+        try:
+            dict_dnma = {}
+            for dnma in lista:
+                dict_dnma[dnma['nan']] = True
+            
+            MANAGED_NAM_DICT.update(dict_dnma)
+            resp_code = 200
+            resp = jsonify({'status' : 'managed nam update'},{'nam' : lista},)
+        except Exception:
+            resp_code = 500
+            resp = jsonify({'status' : 'unable to connect to blockchain'},)
+    
+    return resp, resp_code
+    # return jsonify({"message": "Variável atualizada com sucesso!"})
