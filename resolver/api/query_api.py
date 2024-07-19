@@ -9,17 +9,20 @@ from flask import Blueprint, jsonify , redirect , request
 
 from dark import DarkMap, DarkGateway
 
+from shared_utils import MANAGED_NAM_DICT
+
 ##
 ## VARIABLES
 ##
 PROJECT_ROOT='./'
 SUPORTED_PROTOCOLS = ['ark:','doi:']
-try:
-    MANAGED_NAM_DICT = json.loads(os.environ['MANAGED_NAM_DICT'])
-except:
-    print("ERROR: MANAGED_NAM_DICT not set or malformed")
-    print("resolver shutdown")
-    sys.exit()
+
+# try:
+#     MANAGED_NAM_DICT = json.loads(os.environ['MANAGED_NAM_DICT'])
+# except:
+#     print("ERROR: MANAGED_NAM_DICT not set or malformed")
+#     print("resolver shutdown")
+#     sys.exit()
 
 ##
 ## API CONFIGURATIONS
@@ -62,13 +65,16 @@ def get_pid(dark_id):
         del resp_dict['pid_hash']
         # del resp_dict['responsible']
 
-        if len(dark_pid.externa_pid_list) == 0:
-            del resp_dict['externa_pid_list']
+        try:
+            if len(dark_pid.external_pid_list) == 0:
+                del resp_dict['external_pid_list']
+        except AttributeError:
+            pass
 
         #BUG: FIX typo externa_url
         #TODO: CREATE A METHOD TO CHEK IF PID IS A DRAFT
         
-        if len(dark_pid.externa_url) == 0:
+        if len(dark_pid.external_url) == 0:
             resp_code = 404
             resp = jsonify({'status' : 'Unable to recovery (' + str(dark_id) + ')', 'reason' : 'pid is a draft'},)
 
@@ -159,9 +165,9 @@ def retrieve_ark_metada(protocol,pid):
     if protocol == 'ark:':
         resp, resp_code = get_pid(pid_id)
         # who
-        who = resp['responsible']
-        del resp['responsible']
-        resp['who'] = who
+        # who = resp['responsible']
+        # del resp['responsible']
+        # resp['who'] = who
 
         globla_resolver_addr = 'https://n2t.net/ark:/'
     if protocol == 'doi:':
