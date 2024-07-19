@@ -8,7 +8,7 @@ tqdm
 ijson>=3.1.4      
 
 # pip install web3 --only-binary :all:
-web3==5.29.0
+web3==6.19.0
 py-solc-x >= 1.1.1
 
 # webservice
@@ -16,10 +16,11 @@ flask
 flask-sqlalchemy
 flask_jwt_extended
 gunicorn
+gevent
 # recolocar quando alterar o web3
 # uvicorn[standard]==0.21.1
 
 # dark
-dark-gateway==0.1.0
+dark-gateway==0.1.6
 # load variables
 python-dotenv

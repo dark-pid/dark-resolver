@@ -84,6 +84,15 @@ Follow steps aboves
 
 It is important to mention that the steps 2 and 3 are required to be executed on every executation (e.g., resolver startup)
 
+start with gunicorn
+
+```sh
+    cd resolver
+    gunicorn -w 4 -b 0.0.0.0:8000 server:app --daemon
+```
+
+
+
 ## Contribution
 
 We welcome contributions from the community to enhance the functionality, add support for new protocols, improve blockchain integration, and more. Feel free to fork this repository, make your changes, and submit pull requests. Together, we can make PID resolution more efficient and versatile.

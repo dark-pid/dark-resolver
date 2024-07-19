@@ -1,23 +1,28 @@
 import json
 import os
 import sys
+import re
+
 import configparser
 
-from flask import Blueprint, jsonify , redirect
+from flask import Blueprint, jsonify , redirect , request
 
 from dark import DarkMap, DarkGateway
+
+from shared_utils import MANAGED_NAM_DICT
 
 ##
 ## VARIABLES
 ##
 PROJECT_ROOT='./'
 SUPORTED_PROTOCOLS = ['ark:','doi:']
-try:
-    MANAGED_NAM_DICT = json.loads(os.environ['MANAGED_NAM_DICT'])
-except:
-    print("ERROR: MANAGED_NAM_DICT not set or malformed")
-    print("resolver shutdown")
-    sys.exit()
+
+# try:
+#     MANAGED_NAM_DICT = json.loads(os.environ['MANAGED_NAM_DICT'])
+# except:
+#     print("ERROR: MANAGED_NAM_DICT not set or malformed")
+#     print("resolver shutdown")
+#     sys.exit()
 
 ##
 ## API CONFIGURATIONS
@@ -58,15 +63,18 @@ def get_pid(dark_id):
         
         resp_dict = dark_pid.to_dict()
         del resp_dict['pid_hash']
-        del resp_dict ['responsible']
+        # del resp_dict['responsible']
 
-        if len(dark_pid.externa_pid_list) == 0:
-            del resp_dict['externa_pid_list']
+        try:
+            if len(dark_pid.external_pid_list) == 0:
+                del resp_dict['external_pid_list']
+        except AttributeError:
+            pass
 
         #BUG: FIX typo externa_url
         #TODO: CREATE A METHOD TO CHEK IF PID IS A DRAFT
         
-        if len(dark_pid.externa_url) == 0:
+        if len(dark_pid.external_url) == 0:
             resp_code = 404
             resp = jsonify({'status' : 'Unable to recovery (' + str(dark_id) + ')', 'reason' : 'pid is a draft'},)
 
@@ -95,8 +103,8 @@ def call_external_resolver(globla_resolver_addr,pid_id):
     redirect_url =  globla_resolver_addr + pid_id
     return redirect(redirect_url, code=303)
 
-@query_api.route('/get/<protocol>/<path:pid>', methods=['GET'])
-def retrieve_ark(protocol,pid):
+
+def forward_ark_to_url(protocol,pid):
     # dark_id = nam + str('/') + shoulder
     protocol = protocol.lower()
     pid_id = str(pid)
@@ -112,19 +120,66 @@ def retrieve_ark(protocol,pid):
     if protocol == 'doi:':
         resp, resp_code = get_pid(pid_id)
         globla_resolver_addr = 'https://dx.doi.org/'
+    
 
     nam = pid_id.split('/')[0]
     if (resp_code == 500 or resp_code == 404) and (MANAGED_NAM_DICT.get(nam) == None):
-        #send to global resolver
+        # send to global resolver
         # https://n2t.net/ark:/99166/w66d60p2
         # http://127.0.0.1:8000/ark:/99166/w66d60p2
-        #
         # https://dx.doi.org/10.1016/j.datak.2023.102180
         # http://127.0.0.1:8000/get/DOI:/10.1016/j.datak.2023.102180
         return call_external_resolver(globla_resolver_addr, pid_id)
     elif (resp_code == 404) and (MANAGED_NAM_DICT.get(nam) != None):
         return jsonify({'status' : 'Unable to recovery (' + protocol +'/'+ str(pid_id) + ')'}), 404
     else:
+        # forward the ark to the url
+        url = resp['externa_url'].lower()
+        return  call_external_resolver(url, '')
+        # return resp, resp_code
+    
+@query_api.route('/<protocol>/<path:pid>', methods=['GET'])
+def handle_route_query_route(protocol, pid):
+    if request.full_path.endswith('?info'):
+        return retrieve_ark_metada(protocol,pid)
+    elif re.search(r'\?[a-zA-Z0-9]', request.full_path):
+        #get the comand 
+        cmd = request.full_path.split('?')[-1]
+        return  jsonify({'status' : 'error', 'detail' : 'operation [{}] not implemeted'.format(cmd)}),500
+    else:
+        return forward_ark_to_url(protocol,pid)
+
+
+
+@query_api.route('/info/<protocol>/<path:pid>', methods=['GET'])
+def retrieve_ark_metada(protocol,pid):
+    # dark_id = nam + str('/') + shoulder
+    protocol = protocol.lower()
+    pid_id = str(pid)
+
+    if not protocol in SUPORTED_PROTOCOLS:
+        # http://127.0.0.1:8000/get/ccn:/99166/w66d60p2
+        resp = jsonify({'status' : 'PID [{}] system not suported. dARK resolver is able to handle {}'.format(protocol,SUPORTED_PROTOCOLS)},)
+        return resp, 500
+    
+    if protocol == 'ark:':
+        resp, resp_code = get_pid(pid_id)
+        # who
+        # who = resp['responsible']
+        # del resp['responsible']
+        # resp['who'] = who
+
+        globla_resolver_addr = 'https://n2t.net/ark:/'
+    if protocol == 'doi:':
+        resp, resp_code = get_pid(pid_id)
+        globla_resolver_addr = 'https://dx.doi.org/'
+
+    nam = pid_id.split('/')[0]
+    if (resp_code == 500 or resp_code == 404) and (MANAGED_NAM_DICT.get(nam) == None):
+        #send to global resolver
+        return call_external_resolver(globla_resolver_addr, pid_id)
+    elif (resp_code == 404) and (MANAGED_NAM_DICT.get(nam) != None):
+        return jsonify({'status' : 'Unable to recovery (' + protocol +'/'+ str(pid_id) + ')'}), 404
+    else:
+        # return the metadata   
         return resp, resp_code
-
-

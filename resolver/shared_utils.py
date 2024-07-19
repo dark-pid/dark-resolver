@@ -1,0 +1,1 @@
+MANAGED_NAM_DICT = {}
