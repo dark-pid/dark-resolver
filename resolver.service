@@ -5,10 +5,10 @@ After=network.target
 [Service]
 User=ubuntu
 Group=ubuntu
-WorkingDirectory=/home/ubuntu/dark-resolver
+WorkingDirectory=/home/ubuntu/dark-resolver/resolver/
 #Environment="MANAGED_NAM_DICT={\"8033\":true}"
-ExecStartPre=/bin/bash -c 'source /home/ubuntu/dark-resolver/.venv/bin/activate'
-ExecStart=/home/ubuntu/dark-resolver/.venv/bin/gunicorn --workers 4 --bind unix:myproject.sock -m 007 server:app
+#ExecStartPre=/bin/bash -c 'source /home/ubuntu/dark-resolver/web3/bin/activate'
+ExecStart=/home/ubuntu/dark-resolver/web3/bin/gunicorn --workers 4 --bind  127.0.0.1:8100  server:app
 
 [Install]
 WantedBy=multi-user.target
