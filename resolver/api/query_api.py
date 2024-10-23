@@ -134,7 +134,8 @@ def forward_ark_to_url(protocol,pid):
         return jsonify({'status' : 'Unable to recovery (' + protocol +'/'+ str(pid_id) + ')'}), 404
     else:
         # forward the ark to the url
-        url = resp['externa_url'].lower()
+        # url = resp['externa_url'].lower()
+        url = resp['externa_url']
         return  call_external_resolver(url, '')
         # return resp, resp_code
     
