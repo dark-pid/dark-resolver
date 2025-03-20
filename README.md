@@ -1,51 +1,47 @@
+![dARK Logo](docs/figures/dARK_logo.png)
+
 # dARK Resolver
 
-> Table of content :
+The dARK Resolver is a streamlined version of the ARK resolver, specifically designed to manage Persistent Identifiers (PIDs). PIDs are unique identifiers for digital objects, enabling consistent access regardless of changes in their location or metadata.
+
+The dARK Resolver utilizes the decentralized nature of dARK Core to translate ARK identifiers into the locations of the identified resources or their related metadata. In essence, the dARK Resolver employs blockchain technology for secure and efficient retrieval of PID data. Here's a breakdown of its operation:
+
+- **Querying a dARK PID**: When a user queries a dARK PID, the resolver checks if the PID is linked to the dARK protocol. If so, it retrieves the relevant URL directly from the blockchain.
+- **Blockchain Query**: The resolver queries the blockchain network using the PID as a reference to fetch the URL. This process guarantees data integrity and authenticity through the tamper-proof records of the blockchain.
+- **Resolving the URL**: After the URL is retrieved, the resolver redirects the user to it, allowing seamless access to the digital object.
+
+By harnessing blockchain technology, dARK ensures that the PID resolution process remains secure, transparent, and resistant to tampering. For detailed technical information on blockchain integration, please refer to our [dARK Technical Documentation](https://github.com/dark-pid/dARK).
+
+> **Table of Contents**:
 > 1. [dARK Resolver Goals](#goals)
-> 1. [dARK Resolver Functionalities](#functionality)
-> 1. [How to run dARK Resolver ](#get-started)
-
-The dARK Resolver is a simplified version of the ARK resolver designed to handle Persistent Identifiers (PIDs). PIDs are used to uniquely identify digital objects and provide a consistent way to access them regardless of changes in location or metadata.
-
-
-The dARK Resolver leverages dARK pid system. dARK is decentralized PID system. In other words, dARK use blockchain technology to store and retrieve PID data securely and efficiently. Here's a breakdown of how dARK works:
-
-> 1. **PID Registration on Blockchain**: When a new PID is registered within the dARK system, the corresponding metadata, including the URL of the digital object, is stored on the blockchain.
-> 2. **Querying a dARK PID**: When a user queries a dARK PID, the resolver checks if the PID is associated with the dARK protocol. If so, it proceeds to retrieve the URL directly from the blockchain.
-> 3. **Blockchain Query**: To retrieve the URL from the blockchain, the resolver queries the blockchain network using the PID as a reference. This query ensures data integrity and authenticity, as the information is fetched directly from the blockchain's tamper-proof records.
-> 4. **Resolving the URL**: Once the URL is retrieved from the blockchain, the resolver redirects the user to the resolved URL, allowing seamless access to the digital object.
-
-By utilizing blockchain technology, dARK ensures that the PID resolution process is secure, transparent, and resistant to tampering.
-
-For technical details on how the blockchain integration is implemented, please refer to our [Technical Documentation](link-to-technical-dARK-docs).
+> 2. [dARK Resolver Functionalities](#functionality)
+> 3. [How to Run dARK Resolver](#get-started)
 
 
 ## Goals
 
-The primary goals of the dARK Resolver project are:
+The primary objectives of the dARK Resolver project include:
 
-1. **Simplified PID Resolution**: Provide a straightforward method to resolve PIDs to their corresponding URLs, focusing on efficiency and ease of use.
+1. **Simplified PID Resolution**: Provide an efficient and user-friendly method for resolving PIDs to their corresponding URLs.
 
-2. **PID Metadata Retrieval from dARK**: 
-The core function of the dARK Resolver is to retrieve PID metadata from the dARK network  using the PID as a search key. The dARK employs blockchain technology to ensure data integrity and security during this process. This means that any PID registered in the dARK network can be efficiently resolved by querying its metadata using the PID itself as the identifier.
+2. **PID Metadata Retrieval from dARK**: The core function of the dARK Resolver is to retrieve PID metadata from the dARK network using the PID as a search key. By leveraging blockchain technology, dARK ensures data integrity and security throughout this process. Any PID registered in the dARK network can be resolved efficiently by querying its metadata with the PID itself as the identifier.
 
-3. **Cross-PID System Resolution**: Develop a resolver that supports various PID systems, such as DOI, ARK, CCN, and more. While initial implementation covers DOI and ARK, the design allows for future expansion to additional protocols.
+3. **Cross-PID System Resolution**: Develop a resolver that supports multiple PID systems such as DOI, ARK, CCN, and more. While the initial implementation focuses on DOI and ARK, the design allows for future expansion to additional protocols.
 
 ## Functionality
 
-The dARK Resolver currently is able to retrieve the PID metadata from dARK using the PID as search key. Moreover, the dARK resolver is able to retrive the medata using any pid as search key. For example, we can perform queries using ARK or DOI identifiers. If the PID is stored in the dARK network we will perform queries regardles the pid system. Furthermore, if the PID is not stored in the dARK network we will forward the request to the proper resolver to provide an adequeted anserw to the user. Thi figure bellow ilustres the resolution processo.
+The dARK Resolver can retrieve PID metadata using identifiers from various systems, including ARK and DOI. For example, it can perform queries based on ARK or DOI identifiers. If the PID is stored in the dARK network, it will successfully resolve the query regardless of the PID system. If the PID is not available in the dARK network, the resolver will forward the request to the appropriate resolver for an accurate response. The figure below illustrates the resolution process.
 
 ![dARK Resolver Diagram](./docs/figures/resolver_overview.png)
 
-Regardless of the pid system (e.g., ark or doi)[:^1], the dARK Resolver follows a similar resolution process:
+Regardless of the PID system (e.g., ARK or DOI), the dARK Resolver adheres to a consistent resolution process:
 
-1. Check if the PID belongs to the dARK protocol.
+1. Check if the PID is associated with the dARK protocol.
 2. If yes, retrieve the URL from the PID metadata using blockchain technology.
-3. If not, create a query to the corresponding protocol's global resolver and obtain the URL.
+3. If no, create a query to the corresponding protocol's global resolver and obtain the URL.
 4. Redirect the user to the resolved URL.
 
-Notice that if the query is performed considering the ark, we also check if the NAM of the PID is managed (if PID organization is responsible for the resolver). If the PID is the responsibility of the resolver, the user will receive a message informing that PID is not found.
-
+Additionally, when querying using ARK, we verify if the Name Authority Metadata (NAM) of the PID is managed by the responsible PID organization. If the PID falls under the resolver’s purview but is not found, the user will receive a message indicating that the PID was not located.
 
 ## Get Started
 
@@ -91,14 +87,16 @@ start with gunicorn
     gunicorn -w 4 -b 0.0.0.0:8000 server:app --daemon
 ```
 
+### Configuration
 
+For further detail of the resolver parameter see our [Technical Documentation](docs/README.md)
 
 ## Contribution
 
 We welcome contributions from the community to enhance the functionality, add support for new protocols, improve blockchain integration, and more. Feel free to fork this repository, make your changes, and submit pull requests. Together, we can make PID resolution more efficient and versatile.
 
-For more details, refer to our [Contribution Guidelines](link-to-contribution-guidelines).
+For more details, refer to our [Contribution Guidelines](https://github.com/dark-pid/dARK/blob/docs/contribution_guide.md).
 
 ---
 
-[:^1] In the actual vesion we only suport doi and ark. In future release we intended to add more PID system to our resolver.
+[1] In this version we only suport doi and ark. In future release we intended to add more PID system to our resolver.
