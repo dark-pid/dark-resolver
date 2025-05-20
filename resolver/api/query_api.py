@@ -9,7 +9,7 @@ from flask import Blueprint, jsonify , redirect , request
 
 from dark import DarkMap, DarkGateway
 
-from shared_utils import MANAGED_NAM_DICT
+from shared_utils import MANAGED_NAM_DICT , IPFS_END_POINT
 
 ##
 ## VARIABLES
@@ -87,7 +87,7 @@ def get_pid(dark_id):
     except Exception as e:
         resp = jsonify({'status' : 'Unable to recovery (' + str(dark_id) + ')', 'block_chain_error' : str(e)},)
         resp_code = 500 # colocar um erro especifico?
-    
+
     return resp, resp_code
 
 def get_by_doi(doi_id):
@@ -134,7 +134,7 @@ def forward_ark_to_url(protocol,pid):
         return jsonify({'status' : 'Unable to recovery (' + protocol +'/'+ str(pid_id) + ')'}), 404
     else:
         # forward the ark to the url
-        url = resp['externa_url'].lower()
+        url = resp['external_url'].lower()
         return  call_external_resolver(url, '')
         # return resp, resp_code
     
@@ -164,6 +164,10 @@ def retrieve_ark_metada(protocol,pid):
     
     if protocol == 'ark:':
         resp, resp_code = get_pid(pid_id)
+        #TODO TEMPORARIO
+        del resp['payload']['payload_schema']['id']
+        resp['payload']['payload_schema']['payload_link'] = IPFS_END_POINT + resp['payload']['payload_addr']
+
         # who
         # who = resp['responsible']
         # del resp['responsible']
