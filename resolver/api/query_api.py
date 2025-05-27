@@ -165,8 +165,14 @@ def retrieve_ark_metada(protocol,pid):
     if protocol == 'ark:':
         resp, resp_code = get_pid(pid_id)
         #TODO TEMPORARIO
-        del resp['payload']['payload_schema']['id']
-        resp['payload']['payload_schema']['payload_link'] = IPFS_END_POINT + resp['payload']['payload_addr']
+        try:
+            del resp['payload']['payload_schema']['id']
+            resp['payload']['payload_url'] = IPFS_END_POINT + resp['payload']['payload_addr']
+        except TypeError:
+            pass # caso nao tenha payload
+        except KeyError:
+            pass
+
 
         # who
         # who = resp['responsible']
