@@ -251,3 +251,13 @@ def handle_route_query_new_protocol_format(protocol: str, pid: str) -> Tuple[Any
     return _handle_route_logic(protocol, pid)
 
 
+@query_api.route('/', methods=['GET'])
+def handle_root():
+    """
+    Root route handler that redirects to the dARK project website.
+    
+    Returns:
+        Redirect response to https://dark-pid.net
+    """
+    return redirect('https://dark-pid.net', code=QueryAPIConfig.SEE_OTHER)
+
